@@ -30,7 +30,13 @@ export default function Navbar() {
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger>
-              <Link href="https://www.instagram.com/sussurradores/reels/?hl=nb">Instagram</Link>
+              <a 
+                href="https://www.instagram.com/sussurradores/reels/?hl=nb" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                >
+                Instagram
+                </a>  
             </NavigationMenuTrigger>
             <NavigationMenuTrigger>
               <Link href="/about">Twitter</Link>
