@@ -14,7 +14,7 @@ export default function HomeCarousel() {
   return (
 
       <Carousel
-        className=" absolute -left-3 w-screen overflow-hidden top-29"
+        className=" relative -mt-[80px] w-screen left-1/2 -translate-x-1/2 overflow-hidden"
         plugins={[
           Autoplay({
             delay: 8000,
