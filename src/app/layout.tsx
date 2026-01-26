@@ -29,7 +29,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar />
-        {children}
+        {/* Adicionei pt-24 para mobile e md:pt-32 para desktop */}
+        <main className="pt-24 md:pt-24">{children}</main>
       </body>
     </html>
   );
