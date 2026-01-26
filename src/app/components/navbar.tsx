@@ -60,7 +60,7 @@ export default function Navbar() {
           {/* Nav Desktop */}
           <div className="hidden md:block bg-white rounded-full px-2 shadow-xl">
             <NavigationMenu>
-              <NavigationMenuList className="h-10">
+              <NavigationMenuList className="h-10 ">
                 {navLinks.map((link) => (
                   <NavItem key={link.label} {...link} />
                 ))}
