@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ShoppingCart } from "lucide-react";
+import ShopCard from "./components/shopcard";
 
 const products = [
   {
@@ -83,45 +84,13 @@ export default function Shop() {
         {/* Grade de Produtos - Responsividade Ajustada */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {products.map((product) => (
-            <Card
-              key={product.id}
-              className="bg-zinc-900/40 border-green-500/10 overflow-hidden group hover:border-green-500/50 transition-all duration-300"
-            >
-              <CardHeader className="p-0 relative h-[350px] md:h-[300px]">
-                {product.tag && (
-                  <Badge className="absolute top-4 left-4 z-10 bg-green-500 text-black font-bold uppercase text-[10px] border-none">
-                    {product.tag}
-                  </Badge>
-                )}
-                <div className="relative w-full h-full bg-black/20 overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
-                  />
-                </div>
-              </CardHeader>
-
-              <CardContent className="pt-6">
-                <span className="text-green-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                  {product.category}
-                </span>
-                <CardTitle className="text-lg mt-1 text-white group-hover:text-green-400 transition-colors line-clamp-1">
-                  {product.name}
-                </CardTitle>
-                <p className="text-2xl font-black text-white mt-4 tracking-tighter italic">
-                  {product.price}
-                </p>
-              </CardContent>
-
-              <CardFooter className="pb-6">
-                <Button className="w-full bg-white text-black hover:bg-green-500 hover:text-black font-black uppercase tracking-tighter group transition-all">
-                  <ShoppingCart className="mr-2 h-4 w-4 transition-transform group-hover:-translate-y-1" />
-                  Comprar Agora
-                </Button>
-              </CardFooter>
-            </Card>
+            <ShopCard
+              id={product.id}
+              name={product.name}
+              price={product.price}
+              category={product.category}
+              image={product.image}
+            />
           ))}
         </div>
       </main>

@@ -27,7 +27,7 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 w-full z-[100]">
-      {/* Redes Sociais - Barra Superior Sólida no Mobile */}
+      {/* Redes Sociais - Barra Superior */}
       <div className="bg-black border-b border-green-500/20 py-1.5">
         <div className="container max-w-7xl mx-auto px-6 flex justify-center md:justify-end">
           <div className="flex gap-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
@@ -44,7 +44,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Faixa Principal - Fundo sólido no Mobile para garantir contraste */}
+      {/* Faixa Principal */}
       <div className="bg-black/95 md:bg-black/60 backdrop-blur-md border-b border-white/5">
         <div className="container max-w-7xl mx-auto px-6 flex justify-between items-center h-16 md:h-20">
           <Link href="/" className="relative z-[110]">
@@ -60,7 +60,7 @@ export default function Navbar() {
           {/* Nav Desktop */}
           <div className="hidden md:block bg-white rounded-full px-2 shadow-xl">
             <NavigationMenu>
-              <NavigationMenuList className="h-10 ">
+              <NavigationMenuList className="h-10">
                 {navLinks.map((link) => (
                   <NavItem key={link.label} {...link} />
                 ))}
@@ -68,7 +68,7 @@ export default function Navbar() {
             </NavigationMenu>
           </div>
 
-          {/* Toggle Mobile - Botão com contraste alto */}
+          {/* Toggle Mobile */}
           <button
             className="md:hidden z-[110] p-2 bg-green-500 text-black rounded-md"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -122,8 +122,13 @@ function NavItem({
 }) {
   return (
     <NavigationMenuItem>
-      <Link href={href} passHref>
-        <NavigationMenuLink
+      {/* CORREÇÃO AQUI: 
+          O asChild faz o NavigationMenuLink se comportar apenas como um "casca"
+          e passa as propriedades de estilo diretamente para o componente Link.
+      */}
+      <NavigationMenuLink asChild>
+        <Link
+          href={href}
           className={cn(
             navigationMenuTriggerStyle(),
             "bg-transparent text-black hover:text-green-600 font-bold px-4 text-xs uppercase transition-colors",
@@ -132,8 +137,8 @@ function NavItem({
           )}
         >
           {label}
-        </NavigationMenuLink>
-      </Link>
+        </Link>
+      </NavigationMenuLink>
     </NavigationMenuItem>
   );
 }

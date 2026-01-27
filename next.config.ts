@@ -1,20 +1,17 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').Config} */
+const nextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "imghost.com.br",
-      },
-       {
-        protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "imghost.com.br", // Adicione outros domínios que você usa
       },
     ],
   },
 };
-  /* config options here */
 
 export default nextConfig;
-
