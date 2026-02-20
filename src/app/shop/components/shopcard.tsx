@@ -16,7 +16,7 @@ import { ShoppingCart, ArrowRight, ShoppingCartIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ShopCardProps {
-  id: number; // Adicionamos o ID para a rota dinâmica
+  id: string; // Adicionamos o ID para a rota dinâmica
   name: string;
   price: string;
   category: string;

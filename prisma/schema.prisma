@@ -4,9 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // A URL foi removida daqui, conforme as novas regras do Prisma 7
 }
-// Modelo para a Loja
+
 model Product {
   id          String   @id @default(cuid())
   name        String
@@ -14,23 +13,22 @@ model Product {
   price       Float
   category    String
   image       String
-  images      String[] // Array de strings para galeria
+  images      String[]
   stock       Int      @default(0)
   tag         String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-// Modelo para o Sistema de Sócio e Login
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String   @unique
   password      String
-  role          Role      @default(USER)
-  isSocio       Boolean   @default(false)
-  socioPlan     String?   // Recruta, Sócio Sofredor, Lenda Verde
-  createdAt     DateTime  @default(now())
+  role          Role     @default(USER)
+  isSocio       Boolean  @default(false)
+  socioPlan     String?  
+  createdAt     DateTime @default(now())
 }
 
 enum Role {
