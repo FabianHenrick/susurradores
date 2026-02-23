@@ -1,4 +1,4 @@
-/** @type {import('next').Config} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -8,7 +8,12 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "imghost.com.br", // Adicione outros domínios que você usa
+        hostname: "imghost.com.br",
+      },
+      {
+        protocol: "https",
+        hostname: "rkbusmleyrdmurhovubn.supabase.co",
+        pathname: "/storage/v1/object/public/**",
       },
     ],
   },

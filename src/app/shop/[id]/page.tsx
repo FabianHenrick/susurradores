@@ -1,66 +1,61 @@
+// src/app/shop/[id]/page.tsx
 import { prisma } from "@/lib/prisma";
-import Image from "next/image";
+import { notFound } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { ProductGallery } from "./components/product-gallery";
 
-export default async function ShopPage() {
-  // 1. Busca os produtos direto do banco de dados
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
+interface ProductPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function ProductPage({ params }: ProductPageProps) {
+  // CORREÇÃO: await params obrigatório no Next.js 15
+  const { id } = await params;
+
+  const product = await prisma.product.findUnique({
+    where: { id },
   });
 
+  if (!product) notFound();
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-white">Loja Sussurradores</h1>
+    <div className="min-h-screen bg-black text-white pb-20 pt-10">
+      <div className="container max-w-7xl mx-auto px-6">
+        <Link href="/shop" className="inline-flex items-center text-zinc-500 hover:text-green-500 mb-8 group transition-colors uppercase font-bold text-xs">
+          <ArrowLeft size={16} className="mr-2 transition-transform group-hover:-translate-x-1" />
+          Voltar ao Arsenal
+        </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-green-500 transition-all"
-          >
-            <div className="relative h-64 w-full bg-black">
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                className="object-cover"
-              />
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          <ProductGallery mainImage={product.image} allImages={product.images} />
 
-            <div className="p-4">
-              <span className="text-xs text-green-500 font-mono uppercase tracking-widest">
+          <div className="flex flex-col space-y-8">
+            <div>
+              <Badge className="bg-green-500 text-black mb-4 uppercase font-black">
                 {product.category}
-              </span>
-              <h2 className="text-xl font-semibold text-white mt-1">
+              </Badge>
+              <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-none">
                 {product.name}
-              </h2>
-              <p className="text-zinc-400 text-sm mt-2 line-clamp-2">
-                {product.description}
+              </h1>
+              <p className="text-4xl font-black text-green-500 mt-6 italic">
+                R$ {product.price.toFixed(2)}
               </p>
-
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-green-400 font-bold">
-                  R$ {product.price.toFixed(2)}
-                </span>
-                <Link
-                  href={`/shop/${product.id}`}
-                  className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-md text-sm transition-colors"
-                >
-                  Ver Detalhes
-                </Link>
-              </div>
             </div>
-          </div>
-        ))}
-      </div>
 
-      {products.length === 0 && (
-        <div className="text-center py-20">
-          <p className="text-zinc-500">
-            Nenhum produto encontrado no banco de dados.
-          </p>
+            <div className="p-6 bg-zinc-900/30 border border-white/5 rounded-2xl leading-relaxed text-zinc-400">
+              {product.description}
+            </div>
+
+            <Button className="w-full bg-white text-black hover:bg-green-500 h-20 rounded-full font-black uppercase text-xl transition-all">
+              <ShoppingCart className="mr-3" size={24} />
+              {product.stock > 0 ? "Adicionar ao Arsenal" : "Esgotado"}
+            </Button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

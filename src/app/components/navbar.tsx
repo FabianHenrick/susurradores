@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Instagram, Twitter, Facebook } from "lucide-react";
+import { Menu, X, Instagram, Twitter, Facebook, User as UserIcon, LogOut, Shield } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -12,53 +12,86 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => authListener.subscription.unsubscribe();
+  }, [supabase]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+  };
 
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "Sobre" },
     { href: "/shop", label: "Shop" },
-    { href: "/championships", label: "Campeonatos" },
     { href: "/teams", label: "Times" },
     { href: "/partner", label: "Sócio Sofredor", highlight: true },
   ];
 
   return (
     <header className="fixed top-0 left-0 w-full z-[100]">
-      {/* Redes Sociais - Barra Superior */}
+      {/* Barra Superior */}
       <div className="bg-black border-b border-green-500/20 py-1.5">
-        <div className="container max-w-7xl mx-auto px-6 flex justify-center md:justify-end">
-          <div className="flex gap-5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-            <a href="#" className="hover:text-green-500 transition-colors">
-              <Instagram size={14} />
-            </a>
-            <a href="#" className="hover:text-green-500 transition-colors">
-              <Twitter size={14} />
-            </a>
-            <a href="#" className="hover:text-green-500 transition-colors">
-              <Facebook size={14} />
-            </a>
+        <div className="container max-w-7xl mx-auto px-6 flex justify-between items-center">
+          <div className="hidden md:flex gap-4 text-gray-400">
+             <Instagram size={14} className="hover:text-green-500 cursor-pointer" />
+             <Twitter size={14} className="hover:text-green-500 cursor-pointer" />
+          </div>
+
+          <div className="flex items-center gap-4 ml-auto">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-[10px] text-green-500 font-black italic uppercase leading-none">
+                    {user.user_metadata.nickname || "REC-001"}
+                  </p>
+                  <button onClick={handleLogout} className="text-[8px] text-zinc-500 hover:text-red-500 font-bold uppercase tracking-tighter">
+                    Encerrar Sessão
+                  </button>
+                </div>
+                <Link href="/profile" className="h-9 w-9 rounded-full border border-green-500/50 p-0.5 hover:border-green-500 transition-all overflow-hidden bg-zinc-900 relative">
+                  {user.user_metadata.avatar_url ? (
+                    <Image src={user.user_metadata.avatar_url} alt="Avatar" fill className="object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-green-500"><UserIcon size={18} /></div>
+                  )}
+                </Link>
+              </div>
+            ) : (
+              <Link href="/login" className="text-[10px] font-black text-white hover:text-green-500 uppercase tracking-widest flex items-center gap-2">
+                <Shield size={12} className="text-green-500" /> Acesso ao QG
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
       {/* Faixa Principal */}
-      <div className="bg-black/95 md:bg-black/60 backdrop-blur-md border-b border-white/5">
+      <div className="bg-black/80 backdrop-blur-md border-b border-white/5">
         <div className="container max-w-7xl mx-auto px-6 flex justify-between items-center h-16 md:h-20">
-          <Link href="/" className="relative z-[110]">
-            <Image
-              src="/logo-susurradores.png"
-              alt="Logo"
-              width={110}
-              height={110}
-              className="md:w-[140px]"
-            />
-          </Link>
+          <Link href="/"><Image src="/logo-susurradores.png" alt="Logo" width={120} height={120} /></Link>
 
-          {/* Nav Desktop */}
-          <div className="hidden md:block bg-white rounded-full px-2 shadow-xl">
+          <div className="hidden md:block bg-white rounded-full px-2">
             <NavigationMenu>
               <NavigationMenuList className="h-10">
                 {navLinks.map((link) => (
@@ -68,74 +101,20 @@ export default function Navbar() {
             </NavigationMenu>
           </div>
 
-          {/* Toggle Mobile */}
-          <button
-            className="md:hidden z-[110] p-2 bg-green-500 text-black rounded-md"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
+          <button className="md:hidden p-2 bg-green-500 text-black rounded-sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-        </div>
-      </div>
-
-      {/* Menu Mobile Lateral (Drawer) */}
-      <div
-        className={cn(
-          "fixed inset-0 bg-black z-[105] transition-transform duration-300 md:hidden flex flex-col pt-32 px-10",
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full",
-        )}
-      >
-        <nav className="flex flex-col gap-8 text-left border-l border-green-500/30 pl-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={cn(
-                "text-3xl font-black uppercase italic tracking-tighter transition-all",
-                link.highlight
-                  ? "text-green-500"
-                  : "text-white hover:text-green-400",
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="mt-20 text-gray-500 text-xs font-bold uppercase tracking-widest">
-          Sussurradores E-Sports © 2026
         </div>
       </div>
     </header>
   );
 }
 
-function NavItem({
-  href,
-  label,
-  highlight = false,
-}: {
-  href: string;
-  label: string;
-  highlight?: boolean;
-}) {
+function NavItem({ href, label, highlight = false }: { href: string; label: string; highlight?: boolean; }) {
   return (
     <NavigationMenuItem>
-      {/* CORREÇÃO AQUI: 
-          O asChild faz o NavigationMenuLink se comportar apenas como um "casca"
-          e passa as propriedades de estilo diretamente para o componente Link.
-      */}
       <NavigationMenuLink asChild>
-        <Link
-          href={href}
-          className={cn(
-            navigationMenuTriggerStyle(),
-            "bg-transparent text-black hover:text-green-600 font-bold px-4 text-xs uppercase transition-colors",
-            highlight &&
-              "bg-green-500 text-black hover:bg-black hover:text-white transition-all rounded-none h-full",
-          )}
-        >
+        <Link href={href} className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black font-bold px-4 text-xs uppercase", highlight && "bg-green-500 rounded-none h-full")}>
           {label}
         </Link>
       </NavigationMenuLink>

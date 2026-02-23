@@ -19,7 +19,7 @@ export default function Footer() {
       <div className="container max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-20">
           <div className="max-w-xs">
-            <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-4">
+            <h2 className="text-3xl text-white font-black italic tracking-tighter uppercase mb-4">
               SUSSURRADORES <span className="text-green-500">E-SPORTS</span>
             </h2>
             <p className="text-zinc-500 text-sm font-medium">
