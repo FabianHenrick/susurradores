@@ -2,114 +2,244 @@
 "use client";
 
 import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Mail, Lock, User as UserIcon, Loader2, ArrowLeft, Ghost } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { 
+  UserPlus, Loader2, Shield, ArrowLeft, MapPin, 
+  CreditCard, IdCard, Phone, Mail, Lock, CheckCircle2,
+  User as UserIcon
+} from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [nickname, setNickname] = useState("");
+  const supabase = createClient();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [searchingCep, setSearchingCep] = useState(false);
+
+  // Estados de Credenciais (Obrigatórios)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Estados de Perfil (Obrigatórios: Nickname e FullName)
+  const [nickname, setNickname] = useState("");
+  const [fullName, setFullName] = useState("");
   
-  const router = useRouter();
-  const supabase = createClient();
+  // Estados Opcionais
+  const [cpf, setCpf] = useState("");
+  const [phone, setPhone] = useState("");
+  const [discord, setDiscord] = useState("");
+  const [cep, setCep] = useState("");
+  const [logradouro, setLogradouro] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+  const [numero, setNumero] = useState("");
+
+  // --- MÁSCARAS ---
+  const formatCPF = (v: string) => v.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2").slice(0, 14);
+  const formatPhone = (v: string) => v.replace(/\D/g, "").replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2").slice(0, 15);
+  const formatCEP = (v: string) => v.replace(/\D/g, "").replace(/(\d{5})(\d)/, "$1-$2").slice(0, 9);
+
+  const handleCepBlur = async () => {
+    const cleanCep = cep.replace(/\D/g, "");
+    if (cleanCep.length !== 8) return;
+    try {
+      setSearchingCep(true);
+      const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setLogradouro(data.logradouro);
+        setBairro(data.bairro);
+        setCidade(data.localidade);
+        setUf(data.uf);
+        toast.success("Localização identificada!");
+      }
+    } finally {
+      setSearchingCep(false);
+    }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
+
+    // Validação de Senha
+    if (password !== confirmPassword) {
+      toast.error("Erro nas senhas", {
+        description: "A confirmação de senha não coincide."
+      });
+      return;
+    }
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      setLoading(true);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: name,
-            nickname: nickname,
-            avatar_url: "", 
-          },
-        },
+            nickname,
+            full_name: fullName,
+            cpf: cpf || null,
+            phone: phone || null,
+            discord: discord || null,
+            cep: cep || null,
+            logradouro: logradouro || null,
+            bairro: bairro || null,
+            cidade: cidade || null,
+            uf: uf || null,
+            numero: numero || null,
+            plan: "Recruta"
+          }
+        }
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-      } else {
-        setSuccess(true);
-        setTimeout(() => router.push("/login"), 3000);
-      }
-    } catch (err) {
-      setError("Falha no recrutamento. Tente novamente mais tarde.");
+      if (error) throw error;
+
+      toast.success("Alistamento concluído!", {
+        description: "Verifique sua caixa de entrada para validar o acesso."
+      });
+      router.push("/login");
+
+    } catch (error: any) {
+      toast.error("Erro no sistema", { description: error.message });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
+  const passwordsMatch = password.length > 0 && password === confirmPassword;
+
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute inset-0 z-0 opacity-20">
-        <Image src="https://images.unsplash.com/photo-1511512578047-dfb367046420" alt="BG" fill className="object-cover grayscale" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-green-500/20 via-black to-black" />
-      </div>
-
-      <Card className="w-full max-w-md bg-zinc-950/80 border-green-500/30 backdrop-blur-xl z-10 relative">
-        <CardHeader className="space-y-1 text-center">
-          <Link href="/login" className="text-zinc-500 hover:text-green-500 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors mb-4 w-fit">
-            <ArrowLeft size={12} /> Voltar ao Login
+    <div className="min-h-screen bg-black pt-20 pb-20 px-6 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-green-500/10 blur-[120px] rounded-full" />
+      
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <Link href="/login" className="text-zinc-500 hover:text-green-500 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all">
+            <ArrowLeft size={14} /> Retornar ao Login
           </Link>
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-green-500 rounded-full text-black"><UserPlus size={32} /></div>
-          </div>
-          <CardTitle className="text-3xl font-black italic uppercase tracking-tighter text-white">
-            NOVO <span className="text-green-500">RECRUTA</span>
-          </CardTitle>
-        </CardHeader>
+          <h1 className="text-4xl font-black italic text-white uppercase tracking-tighter mt-4">
+            Novo <span className="text-green-500">Alistamento</span>
+          </h1>
+          <p className="text-zinc-500 text-sm font-medium">Campos marcados com <span className="text-green-500">*</span> são obrigatórios.</p>
+        </div>
 
-        <CardContent>
-          {success ? (
-            <div className="bg-green-500/10 border border-green-500/50 text-green-500 text-xs font-bold uppercase p-6 text-center tracking-widest">
-              Alistamento concluído! Redirecionando...
+        <form onSubmit={handleRegister} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          {/* Coluna 1: Obrigatórios */}
+          <div className="space-y-6">
+            <div className="bg-zinc-950/80 border border-green-500/20 p-6 rounded-sm shadow-[0_0_20px_rgba(34,197,94,0.05)]">
+              <div className="flex items-center gap-3 border-b border-white/5 pb-4 mb-6">
+                <Shield size={18} className="text-green-500" />
+                <h2 className="text-sm font-black text-white uppercase italic">Credenciais Obrigatórias</h2>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">E-mail *</label>
+                  <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="bg-black border-zinc-800" placeholder="exemplo@missao.com" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Senha *</label>
+                    <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="bg-black border-zinc-800" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest flex justify-between">
+                      Confirmar *
+                      {passwordsMatch && <CheckCircle2 size={12} className="text-green-500 animate-pulse" />}
+                    </label>
+                    <Input 
+                      type="password" 
+                      required 
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      className={`bg-black transition-colors ${passwordsMatch ? "border-green-500/50" : "border-zinc-800"}`} 
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-4">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Nome Completo *</label>
+                  <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} className="bg-black border-zinc-800" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Codinome / Nickname *</label>
+                  <Input required value={nickname} onChange={(e) => setNickname(e.target.value)} className="bg-black border-zinc-800" placeholder="Como quer ser chamado" />
+                </div>
+              </div>
             </div>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
-              {error && <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-[10px] font-bold uppercase p-3 text-center">{error}</div>}
-              
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase text-zinc-400 flex items-center gap-2"><UserIcon size={12} /> Nome Real</label>
-                <Input type="text" className="bg-black/50 border-white/10 text-white" value={name} onChange={(e) => setName(e.target.value)} required />
+            
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-green-500 text-black hover:bg-green-400 font-black uppercase italic py-8 text-xl rounded-none transition-all"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : <span className="flex items-center gap-3"><UserPlus size={22} /> Criar Conta</span>}
+            </Button>
+          </div>
+
+          {/* Coluna 2: Opcionais */}
+          <div className="space-y-6">
+            <div className="bg-zinc-950/40 border border-white/5 p-6 rounded-sm">
+              <div className="flex items-center gap-3 border-b border-white/5 pb-4 mb-6">
+                <IdCard size={18} className="text-zinc-500" />
+                <h2 className="text-sm font-black text-zinc-500 uppercase italic">Dados Opcionais</h2>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase text-green-500 flex items-center gap-2"><Ghost size={12} /> Apelido (Nickname)</label>
-                <Input type="text" className="bg-black/50 border-green-500/20 text-white focus:border-green-500" value={nickname} onChange={(e) => setNickname(e.target.value)} required />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">CPF</label>
+                  <Input value={cpf} onChange={(e) => setCpf(formatCPF(e.target.value))} placeholder="000.000.000-00" className="bg-black border-zinc-800" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Telefone</label>
+                  <Input value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(00) 00000-0000" className="bg-black border-zinc-800" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Discord Tag</label>
+                  <Input value={discord} onChange={(e) => setDiscord(e.target.value)} placeholder="usuario#0000" className="bg-black border-zinc-800" />
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase text-zinc-400 flex items-center gap-2"><Mail size={12} /> E-mail</label>
-                <Input type="email" className="bg-black/50 border-white/10 text-white" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <div className="flex items-center gap-3 border-b border-white/5 pb-4 mt-8 mb-6">
+                <MapPin size={18} className="text-zinc-500" />
+                <h2 className="text-sm font-black text-zinc-500 uppercase italic">Endereço Opcional</h2>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase text-zinc-400 flex items-center gap-2"><Lock size={12} /> Senha</label>
-                <Input type="password" className="bg-black/50 border-white/10 text-white" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-1 space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">CEP</label>
+                  <div className="relative">
+                    <Input value={cep} onChange={(e) => setCep(formatCEP(e.target.value))} onBlur={handleCepBlur} className="bg-black border-zinc-800" />
+                    {searchingCep && <Loader2 className="absolute right-2 top-2 animate-spin text-green-500" size={16} />}
+                  </div>
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Rua</label>
+                  <Input value={logradouro} readOnly className="bg-zinc-900 border-transparent text-zinc-600" />
+                </div>
+                <div className="col-span-1 space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Nº</label>
+                  <Input value={numero} onChange={(e) => setNumero(e.target.value)} className="bg-black border-zinc-800" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Bairro</label>
+                  <Input value={bairro} readOnly className="bg-zinc-900 border-transparent text-zinc-600" />
+                </div>
               </div>
+            </div>
+          </div>
 
-              <Button type="submit" disabled={isLoading} className="w-full bg-green-500 text-black hover:bg-green-400 font-black uppercase italic py-6 rounded-none mt-4">
-                {isLoading ? <Loader2 className="animate-spin" /> : "FINALIZAR ALISTAMENTO"}
-              </Button>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+        </form>
+      </div>
     </div>
   );
 }

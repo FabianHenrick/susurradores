@@ -90,7 +90,7 @@ export default function Home() {
               SÓCIO SOFREDOR: 20% OFF NA LOJA E CONTEÚDOS EXCLUSIVOS
             </p>
           </div>
-          <Link href="/socio">
+          <Link href="/partner">
             <Button
               variant="outline"
               className="bg-black text-white border-none hover:bg-zinc-900 rounded-none font-black uppercase italic px-10"

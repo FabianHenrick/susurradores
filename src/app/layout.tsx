@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
+import { Toaster } from "@/components/ui/sonner"; // Importando o Toaster do Sonner
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,9 +31,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar />
-        {/* Adicionei pt-24 para mobile e md:pt-32 para desktop */}
-        <main className="pt-24 b md:pt-24">{children}</main>
+        {/* pt-24 para mobile e md:pt-24 para desktop conforme seu comentário */}
+        <main className="pt-24 md:pt-24">
+          {children}
+        </main>
         <Footer />
+        
+        <Toaster 
+          theme="dark" 
+          position="top-right" 
+          richColors 
+          closeButton
+        />
       </body>
     </html>
   );
