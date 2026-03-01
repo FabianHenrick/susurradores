@@ -3,7 +3,7 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Instagram, Twitter, Facebook, User as UserIcon, LogOut, Shield } from "lucide-react";
+import { Menu, X, Instagram, Twitter, User as UserIcon, Shield } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { CartSheet } from "@/app/components/cart-sheet";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -58,7 +59,12 @@ export default function Navbar() {
              <Twitter size={14} className="hover:text-green-500 cursor-pointer" />
           </div>
 
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-6 ml-auto">
+            {/* CARRINHO NO DESKTOP */}
+            <div className="hidden md:block">
+               <CartSheet />
+            </div>
+
             {user ? (
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
@@ -101,9 +107,13 @@ export default function Navbar() {
             </NavigationMenu>
           </div>
 
-          <button className="md:hidden p-2 bg-green-500 text-black rounded-sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex items-center gap-4 md:hidden">
+            {/* CARRINHO NO MOBILE */}
+            <CartSheet />
+            <button className="p-2 bg-green-500 text-black rounded-sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
     </header>
@@ -114,7 +124,7 @@ function NavItem({ href, label, highlight = false }: { href: string; label: stri
   return (
     <NavigationMenuItem>
       <NavigationMenuLink asChild>
-        <Link href={href} className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black font-bold px-4 text-xs uppercase", highlight && "bg-green-500 rounded-none h-full")}>
+        <Link href={href} className={cn(navigationMenuTriggerStyle(), "bg-transparent text-black font-bold px-4 text-xs uppercase", highlight && "bg-green-500 rounded-none h-full hover:bg-green-400")}>
           {label}
         </Link>
       </NavigationMenuLink>

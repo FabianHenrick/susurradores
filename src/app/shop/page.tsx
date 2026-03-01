@@ -1,16 +1,27 @@
 import React from "react";
-import { prisma } from "@/lib/prisma"; // Certifique-se que o caminho está correto
+import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import ShopCard from "./components/shopcard";
+import Link from "next/link";
 
-// Removi o "use client" para podermos fazer a busca direta no banco (Server Component)
-export default async function Shop() {
-  // 1. Busca os produtos do seu banco de dados PostgreSQL
+interface ShopProps {
+  searchParams: Promise<{ category?: string }>;
+}
+
+export default async function Shop({ searchParams }: ShopProps) {
+  const { category } = await searchParams;
+
+  // 1. Busca os produtos filtrando por categoria se existir na URL
   const products = await prisma.product.findMany({
+    where: {
+      category: category && category !== "Todos" ? category : undefined,
+    },
     orderBy: { createdAt: "desc" },
   });
+
+  const categories = ["Todos", "Uniformes", "Casual", "Acessórios"];
 
   return (
     <div className="min-h-screen bg-black pb-20 text-white">
@@ -30,17 +41,27 @@ export default async function Shop() {
       </section>
 
       <main className="container max-w-7xl mx-auto px-6 mt-12">
-        {/* Filtros rápidos (Aqui você pode criar um componente Client se precisar de clique) */}
+        {/* Filtros rápidos via URL */}
         <div className="flex gap-4 mb-10 overflow-x-auto pb-2 no-scrollbar">
-          {["Todos", "Uniformes", "Casual", "Acessórios"].map((cat) => (
-            <Button
-              key={cat}
-              variant="outline"
-              className="rounded-full border-green-500/30 hover:bg-green-500 hover:text-black transition-all whitespace-nowrap"
-            >
-              {cat}
-            </Button>
-          ))}
+          {categories.map((cat) => {
+            const isActive = (category || "Todos") === cat;
+            return (
+              <Button
+                key={cat}
+                variant="outline"
+                asChild
+                className={`rounded-full border-green-500/30 transition-all whitespace-nowrap ${
+                  isActive 
+                    ? "bg-green-500 text-black border-green-500" 
+                    : "hover:bg-green-500/10 hover:text-green-500"
+                }`}
+              >
+                <Link href={cat === "Todos" ? "/shop" : `/shop?category=${cat}`}>
+                  {cat}
+                </Link>
+              </Button>
+            );
+          })}
         </div>
 
         {/* Grade de Produtos */}
@@ -48,7 +69,7 @@ export default async function Shop() {
           {products.map((product) => (
             <ShopCard
               key={product.id}
-              id={product.id} // Agora o ID vem como String do Prisma
+              id={product.id}
               name={product.name}
               price={`R$ ${product.price.toFixed(2)}`}
               category={product.category}
@@ -63,7 +84,7 @@ export default async function Shop() {
         {products.length === 0 && (
           <div className="text-center py-20 border border-dashed border-zinc-800 rounded-2xl">
             <p className="text-zinc-500 uppercase tracking-widest font-bold">
-              O estoque está vazio no momento, recruta.
+              O estoque está vazio para esta categoria, recruta.
             </p>
           </div>
         )}
