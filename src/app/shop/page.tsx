@@ -6,14 +6,16 @@ import { ShoppingCart } from "lucide-react";
 import ShopCard from "./components/shopcard";
 import Link from "next/link";
 
+// Definindo a interface para os parâmetros de busca (filtros)
 interface ShopProps {
   searchParams: Promise<{ category?: string }>;
 }
 
 export default async function Shop({ searchParams }: ShopProps) {
+  // Captura a categoria da URL para filtrar os produtos no servidor
   const { category } = await searchParams;
 
-  // 1. Busca os produtos filtrando por categoria se existir na URL
+  // Busca os produtos no banco, filtrando se houver uma categoria selecionada
   const products = await prisma.product.findMany({
     where: {
       category: category && category !== "Todos" ? category : undefined,
@@ -41,7 +43,7 @@ export default async function Shop({ searchParams }: ShopProps) {
       </section>
 
       <main className="container max-w-7xl mx-auto px-6 mt-12">
-        {/* Filtros rápidos via URL */}
+        {/* Filtros rápidos: Agora funcionais via Link e URL */}
         <div className="flex gap-4 mb-10 overflow-x-auto pb-2 no-scrollbar">
           {categories.map((cat) => {
             const isActive = (category || "Todos") === cat;
@@ -52,8 +54,8 @@ export default async function Shop({ searchParams }: ShopProps) {
                 asChild
                 className={`rounded-full border-green-500/30 transition-all whitespace-nowrap ${
                   isActive 
-                    ? "bg-green-500 text-black border-green-500" 
-                    : "hover:bg-green-500/10 hover:text-green-500"
+                    ? "bg-green-500 text-black border-green-500 hover:bg-green-400" 
+                    : "hover:bg-green-500 hover:text-black"
                 }`}
               >
                 <Link href={cat === "Todos" ? "/shop" : `/shop?category=${cat}`}>
@@ -71,6 +73,7 @@ export default async function Shop({ searchParams }: ShopProps) {
               key={product.id}
               id={product.id}
               name={product.name}
+              // Formatação de preço garantindo duas casas decimais
               price={`R$ ${product.price.toFixed(2)}`}
               category={product.category}
               image={product.image}
@@ -80,11 +83,11 @@ export default async function Shop({ searchParams }: ShopProps) {
           ))}
         </div>
 
-        {/* Estado Vazio */}
+        {/* Estado Vazio: Caso o filtro não retorne produtos */}
         {products.length === 0 && (
           <div className="text-center py-20 border border-dashed border-zinc-800 rounded-2xl">
             <p className="text-zinc-500 uppercase tracking-widest font-bold">
-              O estoque está vazio para esta categoria, recruta.
+              Nenhum item encontrado nesta categoria, recruta.
             </p>
           </div>
         )}

@@ -37,14 +37,15 @@ export default function ShopCard({ id, name, price, category, image, tag, isOutS
             </Badge>
           )}
 
-          <Image
+         <Image
             src={validImage}
-            alt={name}
-            fill
-            className={cn(
-              "object-cover transition-transform duration-700 group-hover:scale-110",
-              isOutStock ? "grayscale opacity-50" : "opacity-90",
-            )}
+              alt={name}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw" // Adicione isso
+              className={cn(
+                "object-cover transition-transform duration-700 group-hover:scale-110",
+                isOutStock ? "grayscale opacity-50" : "opacity-90",
+              )}
           />
         </CardHeader>
 
@@ -53,7 +54,7 @@ export default function ShopCard({ id, name, price, category, image, tag, isOutS
             {category}
           </p>
           <CardTitle className="text-white text-lg font-bold tracking-tight line-clamp-1 group-hover:text-green-400 transition-colors">
-            {name}
+            {name || "Produto sem nome"}
           </CardTitle>
           <div className="pt-2 text-2xl font-black text-white italic tracking-tighter">
             {price}

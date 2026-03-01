@@ -1,11 +1,13 @@
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  // As linhas url e directUrl foram removidas daqui
+}
+
+// ... seus models Product, User, etc. continuam aqui intactos
 model Product {
   id          String   @id @default(cuid())
   name        String
@@ -27,7 +29,7 @@ model User {
   password      String
   role          Role     @default(USER)
   isSocio       Boolean  @default(false)
-  socioPlan     String?  
+  socioPlan     String?
   createdAt     DateTime @default(now())
 }
 

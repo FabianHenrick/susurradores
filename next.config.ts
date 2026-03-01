@@ -11,6 +11,10 @@ const nextConfig = {
         hostname: "imghost.com.br",
       },
       {
+        protocol: 'https',
+        hostname: 'down-br.img.susercontent.com',
+      },
+      {
         protocol: "https",
         hostname: "rkbusmleyrdmurhovubn.supabase.co",
         pathname: "/storage/v1/object/public/**",
